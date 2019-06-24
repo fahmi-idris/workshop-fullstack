@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from 'axios';
 
 export const useInputValue = (initialValue = '') => {
   const [inputValue, setInputValue] = useState(initialValue);
@@ -20,6 +21,16 @@ export const useInputValue = (initialValue = '') => {
 
 export const useTodos = (initialValue = []) => {
   const [todos, setTodos] = useState(initialValue);
+  async function fetchUrl() {
+    const result = await axios(
+      'https://private-46ace-todolist86.apiary-mock.com/tasks',
+    );
+    setTodos(result.data)
+  }
+
+  useEffect(() => {
+    fetchUrl();
+  }, []);
 
   return {
     todos,

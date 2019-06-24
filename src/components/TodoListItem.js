@@ -6,7 +6,7 @@ import {
   ListItemText,
   ListItemSecondaryAction
 } from "@material-ui/core";
-import DeleteOutlined from "@material-ui/icons/DeleteOutlined";
+import Edit from "@material-ui/icons/Edit";
 
 const TodoListItem = memo(props => (
   <ListItem divider={props.divider}>
@@ -18,7 +18,7 @@ const TodoListItem = memo(props => (
     <ListItemText primary={props.task} />
     <ListItemSecondaryAction>
       <IconButton aria-label="Delete Todo" onClick={props.onButtonClick}>
-        <DeleteOutlined />
+        <Edit />
       </IconButton>
     </ListItemSecondaryAction>
   </ListItem>
