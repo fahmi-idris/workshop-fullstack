@@ -8,28 +8,70 @@ import {
 } from "@material-ui/core";
 import Edit from "@material-ui/icons/Edit";
 import styled, { css } from 'styled-components';
+import axios from 'axios';
+import ls from "local-storage";
 
 import { TodosContext } from "../index";
 
-const TodoListItem = ({ done, task, index, divider }) => {
+const TodoListItem = ({ _id, done, task, index, divider }) => {
   const { dispatch } = useContext(TodosContext);
   const [editing, setEditing] = useState(false);
 
   const handleDoneChange = checked => {
-    dispatch({
-      type: "SET_DONE",
+    const isOnline = navigator.onLine ? true : false;
+    const data = {
+      _id,
+      task,
       done: checked,
-      index
-    });
+    };
+
+    if (isOnline) {
+      const offlineData = ls.get("TODOS").filter(item => item.edited);
+      axios.put('http://localhost:8080/tasks', [ ...offlineData, data ]).then((res) => {
+        dispatch({
+          type: "SET_DONE",
+          done: checked,
+          index
+        });
+      }).catch(err => {
+        alert('oppss something when wrong')
+      })
+    } else {
+      dispatch({
+        type: "SET_DONE",
+        done: checked,
+        index
+      });
+    }
   };
 
   const handleEditorBlur = task => {
-    setEditing(false);
-    dispatch({
-      type: "SET_TEXT",
+    const isOnline = navigator.onLine ? true : false;
+    const data = {
+      _id,
       task,
-      index
-    });
+      done
+    };
+
+    if (isOnline) {
+      const offlineData = ls.get("TODOS").filter(item => item.edited);
+      axios.put('http://localhost:8080/tasks', [ ...offlineData, data ]).then((res) => {
+        dispatch({
+          type: "SET_TEXT",
+          task,
+          index
+        });
+      }).catch(err => {
+        alert('oppss something when wrong')
+      })
+    } else {
+      dispatch({
+        type: "SET_TEXT",
+        task,
+        index
+      });
+    }
+    setEditing(false);
   };
 
   return (
@@ -81,6 +123,7 @@ const Editor = ({ task, onBlur }) => {
       onChange={handleChange}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
+      autoFocus
       fullWidth
     />
   );
