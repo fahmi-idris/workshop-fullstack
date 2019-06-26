@@ -1,8 +1,8 @@
-import React, { memo } from "react";
+import React, { memo, useReducer, useEffect } from "react";
 import ReactDOM from 'react-dom';
+import ls from "local-storage";
 
 import * as serviceWorker from './infrastructure/serviceWorker';
-import { useInputValue, useTodos } from "./infrastructure/hooks";
 
 import Layout from "./components/Layout";
 import Form from "./components/Form";
@@ -10,31 +10,65 @@ import TodoList from "./components/TodoList";
 
 import './assets/css/style.css'
 
-const TodoApp = memo(props => {
-  const { inputValue, changeInput, clearInput, keyInput } = useInputValue();
-  const { todos, addTodo, checkTodo, removeTodo } = useTodos();
+export const TodosContext = React.createContext([]);
 
-  const clearInputAndAddTodo = () => {
-    clearInput();
-    addTodo(inputValue);
+const setTodoKeyByIndex = ({ todos, key, value, index }) => [
+  ...todos.slice(0, index),
+  { ...todos[index], [key]: value },
+  ...todos.slice(index + 1)
+];
+
+const TodoApp = memo(props => {
+  const [todos, dispatch] = useReducer((todos, action) => {
+    switch (action.type) {
+      case "ADD_TODO":
+        return [
+          { done: false, task: action.todo },
+          ...todos
+        ];
+      case "SET_DONE":
+        return setTodoKeyByIndex({
+          todos,
+          key: "done",
+          value: action.done,
+          index: action.index
+        }).sort((a, b) => {
+          if (a.done) return 1;
+          if (b.done) return -1;
+          return 0;
+        });
+      case "SET_TEXT":
+        return setTodoKeyByIndex({
+          todos,
+          key: "task",
+          value: action.task,
+          index: action.index
+        });
+      default:
+        return todos;
+    }
+  }, ls.get("TODOS") || []);
+  useEffect(
+    () => {
+      ls.set("TODOS", todos);
+    },
+    [todos]
+  );
+
+  const handleSubmit = todo => {
+    dispatch({
+      type: "ADD_TODO",
+      todo
+    });
   };
 
-  console.dir(todos);
-
   return (
+    <TodosContext.Provider value={{ todos, dispatch }}>
     <Layout>
-      <Form
-        inputValue={inputValue}
-        onInputChange={changeInput}
-        onButtonClick={clearInputAndAddTodo}
-        onInputKeyPress={event => keyInput(event, clearInputAndAddTodo)}
-      />
-      <TodoList
-        items={todos}
-        onItemCheck={idx => checkTodo(idx)}
-        onItemRemove={idx => removeTodo(idx)}
-      />
+      <Form onSubmit={handleSubmit} />
+      <TodoList items={todos} />
     </Layout>
+    </TodosContext.Provider>
   );
 });
 

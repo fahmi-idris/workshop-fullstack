@@ -47,7 +47,7 @@ export const useTodos = (initialValue = []) => {
       setTodos(
         todos.map((todo, index) => {
           if (idx === index) {
-            todo.checked = !todo.checked;
+            todo.done = !todo.done;
           }
 
           return todo;

@@ -1,30 +1,35 @@
-import React, { memo } from "react";
-import { TextField, Paper, Button, Grid } from "@material-ui/core";
+import React, { useState } from "react";
+import { TextField, Paper, Grid } from "@material-ui/core";
 
-const Form = memo(props => (
-  <Paper style={{ margin: 16, padding: 16 }}>
+const Form = ({ onSubmit }) => {
+  const [value, setValue] = useState('');
+
+  const handleValueChange = e => {
+    setValue(e.target.value);
+  };
+
+  const handleEnter = e => {
+    if (e.keyCode === 13 && value !== "") {
+      onSubmit(value);
+      setValue('');
+    }
+  };
+
+  return(
+    <Paper style={{ margin: 16, padding: 16 }}>
     <Grid container>
-      <Grid xs={10} md={11} item style={{ paddingRight: 16 }}>
+      <Grid xs={12} md={12} item>
         <TextField
           placeholder="Add Todo here"
-          value={props.inputValue}
-          onChange={props.onInputChange}
-          onKeyPress={props.onInputKeyPress}
+          value={value}
+          onChange={handleValueChange}
+          onKeyDown={handleEnter}
           fullWidth
         />
       </Grid>
-      <Grid xs={2} md={1} item>
-        <Button
-          fullWidth
-          color="secondary"
-          variant="outlined"
-          onClick={props.onButtonClick}
-        >
-          Add
-        </Button>
-      </Grid>
     </Grid>
   </Paper>
-));
+  );
+};
 
 export default Form;
